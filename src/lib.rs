@@ -2,6 +2,10 @@ use std::env;
 use std::error::Error;
 use std::fs;
 
+// Stores the configuration details
+// query: string we're searching for
+// filename: file we're searching in
+// case_sensitive: use case sensitive search?
 pub struct Config {
 	pub query: String,
 	pub filename: String,
@@ -10,8 +14,10 @@ pub struct Config {
 
 impl Config {
 	pub fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
+		// First argument is the path
 		args.next();
 
+		// Get the query and the filename
 		let query = match args.next() {
 			Some(arg) => arg,
 			None => return Err("Please specify a query"),
@@ -20,6 +26,7 @@ impl Config {
 			Some(arg) => arg,
 			None => return Err("Please specify a filename"),
 		};
+		// Check if case sensitive search is on (the converse in actuality)
 		let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
 		Ok(Config {
@@ -31,8 +38,10 @@ impl Config {
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+	// Read the contents of the file into a string
 	let contents = fs::read_to_string(config.filename)?;
 
+	// Search based on if we want case sensitive or case insensitive search
 	let results = if config.case_sensitive {
 		search(&config.query, &contents)
 	} else {
@@ -45,6 +54,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
+// Case sensitive search
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 	contents
 		.lines()
@@ -52,6 +62,7 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 		.collect()
 }
 
+// Case insensitive search
 pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 	contents
 		.lines()
@@ -63,6 +74,7 @@ pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a st
 mod tests {
 	use super::*;
 
+	// Test the case sensitive search
 	#[test]
 	fn case_sensitive() {
 		let query = "duct";
@@ -75,6 +87,7 @@ Duct tape.";
 		assert_eq!(vec!["safe, fast, productive."], search(query, contents));
 	}
 
+	// Test the case insensitive search
 	#[test]
 	fn case_insensitive() {
 		let query = "rUsT";
