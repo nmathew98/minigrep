@@ -8,12 +8,12 @@ fn main() {
 
     // Store a reference to the query and filename from the arguments passed
     let config = Config::new(&args).unwrap_or_else(|err| {
-        println!("{}", err);
+        eprintln!("{}", err);
         process::exit(1);
     });
 
     if let Err(e) = minigrep::run(config) {
-        println!("{}", e);
+        eprintln!("{}", e);
 
         process::exit(1);
     }
